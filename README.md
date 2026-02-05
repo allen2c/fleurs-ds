@@ -1,10 +1,10 @@
-# ac-py-template
+# Fleurs Dataset
 
-[![PyPI version](https://img.shields.io/pypi/v/ac-py-template.svg)](https://pypi.org/project/ac-py-template/)
-[![Python Version](https://img.shields.io/pypi/pyversions/ac-py-template.svg)](https://pypi.org/project/ac-py-template/)
-[![License](https://img.shields.io/pypi/l/ac-py-template.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/fleurs-ds.svg)](https://pypi.org/project/fleurs-ds/)
+[![Python Version](https://img.shields.io/pypi/pyversions/fleurs-ds.svg)](https://pypi.org/project/fleurs-ds/)
+[![License](https://img.shields.io/pypi/l/fleurs-ds.svg)](https://opensource.org/licenses/MIT)
 
-AllenChou's Python template.
+Google Fleurs As Huggingface Dataset
 
 ## Features
 
