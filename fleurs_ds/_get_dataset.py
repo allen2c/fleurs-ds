@@ -1,9 +1,12 @@
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 if TYPE_CHECKING:
     from datasets import Dataset
 
+
+logger = logging.getLogger(__name__)
 
 HF_DATASETS_PARQUET_PATTERN = (
     "hf://datasets/google/fleurs@refs/convert/parquet/{lang}/{split}/*.parquet"
@@ -85,12 +88,26 @@ def _get_dataset_of_language_and_split(
     ds = ds.select_columns(["audio", "text", "language"])
 
     # Cast to mp3 128k
+    logger.info(f"Starting conversion for {language}:{split}...")
     ds = ds.map(
         _convert_audio_to_mp3_128k,
         num_proc=4,
         keep_in_memory=True,
         desc=f"Converting audio to mp3 128k for {language}:{split}",
     )
+
+    original_count = len(ds)
+    ds = ds.filter(
+        lambda x: x["is_valid"],
+        desc=f"Filtering corrupted samples for {language}:{split}",
+    )
+    filtered_count = len(ds)
+    if filtered_count < original_count:
+        logger.warning(
+            f"Dropped {original_count - filtered_count} corrupted samples "
+            + f"from {language}:{split}"
+        )
+    ds = ds.remove_columns(["is_valid"])
 
     return ds
 
@@ -102,11 +119,22 @@ def _convert_audio_to_mp3_128k(sample: dict) -> dict:
     import soundfile as sf
     from pydub import AudioSegment
 
+    error_result = {"audio": None, "is_valid": False}
+
     with tempfile.TemporaryDirectory() as _temp_dir:
         temp_dir = Path(_temp_dir)
         wav_path = temp_dir / "audio.wav"
 
-        sf.write(wav_path, sample["audio"]["array"], sample["audio"]["sampling_rate"])
+        try:
+            audio_array = sample["audio"]["array"]
+        except Exception as e:
+            logger.exception(e)
+            logger.error(f"Error getting audio array for sample: {sample}")
+            return error_result
+
+        sampling_rate = sample["audio"]["sampling_rate"]
+
+        sf.write(wav_path, audio_array, sampling_rate)
         # Audio processing logic (same as original)
         audio_seg: AudioSegment = AudioSegment.from_file(wav_path)
         audio_seg = audio_seg.set_channels(1).set_frame_rate(16000)
@@ -115,7 +143,7 @@ def _convert_audio_to_mp3_128k(sample: dict) -> dict:
         audio_bytes = mp3_io.getvalue()
 
         # Return the processed audio bytes
-        return {"audio": audio_bytes}
+        return {"audio": audio_bytes, "is_valid": True}
 
 
 LANGUAGE_TYPES: TypeAlias = Literal[
