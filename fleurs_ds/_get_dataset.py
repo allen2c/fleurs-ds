@@ -91,7 +91,7 @@ def _get_dataset_of_language_and_split(
     logger.info(f"Starting conversion for {language}:{split}...")
     ds = ds.map(
         _convert_audio_to_mp3_128k,
-        num_proc=4,
+        num_proc=8,
         keep_in_memory=True,
         desc=f"Converting audio to mp3 128k for {language}:{split}",
     )
@@ -138,12 +138,14 @@ def _convert_audio_to_mp3_128k(sample: dict) -> dict:
         # Audio processing logic (same as original)
         audio_seg: AudioSegment = AudioSegment.from_file(wav_path)
         audio_seg = audio_seg.set_channels(1).set_frame_rate(16000)
+        duration = audio_seg.duration_seconds
+
         mp3_io = io.BytesIO()
         audio_seg.export(mp3_io, format="mp3", bitrate="128k")
         audio_bytes = mp3_io.getvalue()
 
         # Return the processed audio bytes
-        return {"audio": audio_bytes, "is_valid": True}
+        return {"audio": audio_bytes, "is_valid": True, "duration": duration}
 
 
 LANGUAGE_TYPES: TypeAlias = Literal[
