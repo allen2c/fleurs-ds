@@ -119,7 +119,7 @@ def _convert_audio_to_mp3_128k(sample: dict) -> dict:
     import soundfile as sf
     from pydub import AudioSegment
 
-    error_result = {"audio": None, "is_valid": False}
+    error_result = {"audio": None, "is_valid": False, "duration": None}
 
     with tempfile.TemporaryDirectory() as _temp_dir:
         temp_dir = Path(_temp_dir)
