@@ -4,7 +4,7 @@ from typing import Final
 
 from ._get_dataset import ALL_LANGUAGES, LANGUAGE_TYPES, get_dataset
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 FLEURS_DATASETS_CACHE: Final[Path] = Path(
     os.getenv("FLEURS_DATASETS_CACHE", "~/.cache/huggingface/datasets/fleurs")
